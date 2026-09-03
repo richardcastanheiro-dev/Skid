@@ -1,955 +1,907 @@
 --[[
-    BetterOrion V2
-    UI Library - Luau
-    Criada do zero
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                    OBSIDIAN UI LIBRARY v2.0                    ║
+    ║            Inspired by Obsidian's minimalistic design          ║
+    ║                         By: Your Name                          ║
+    ╚══════════════════════════════════════════════════════════════════╝
 ]]
 
-local BetterOrion = {}
-BetterOrion.__index = BetterOrion
-
-local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
+local PlayerService = game:GetService("Players")
+local UserService = game:GetService("UserService")
+local TextService = game:GetService("TextService")
 
-local LocalPlayer = Players.LocalPlayer
-
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 18),
-    Secondary = Color3.fromRGB(20, 20, 24),
-    Tertiary = Color3.fromRGB(25, 25, 30),
-    Accent = Color3.fromRGB(255, 0, 0),
-    Text = Color3.fromRGB(235, 235, 235),
-    SubText = Color3.fromRGB(145, 145, 150),
-    Stroke = Color3.fromRGB(45, 45, 50),
-    ToggleOff = Color3.fromRGB(55, 55, 60)
+local vgs = {
+    MS  = PlayerService.LocalPlayer:GetMouse(),
+    p   = PlayerService.LocalPlayer,
+    UIS = UserInputService,
+    TS  = TweenService,
+    HS  = HttpService,
+    RS  = RunService,
+    ps  = PlayerService
 }
 
-local function Create(class, properties)
-    local object = Instance.new(class)
+-- ================================
+-- CONFIGURAÇÕES GLOBAIS
+-- ================================
+local ObsidianConfig = {
+    Font = Enum.Font.Gotham,
+    FontBold = Enum.Font.GothamBold,
+    FontSemibold = Enum.Font.GothamSemibold,
+    FontBlack = Enum.Font.GothamBlack,
+    CornerRadius = 8,
+    AnimationSpeed = 0.25,
+    SearchBarEnabled = true,
+    AccentColor = Color3.fromRGB(120, 80, 255), -- Roxo Obsidian
+    BackgroundColor = Color3.fromRGB(20, 20, 22),
+    SurfaceColor = Color3.fromRGB(30, 30, 35),
+    BorderColor = Color3.fromRGB(45, 45, 55),
+    TextColor = Color3.fromRGB(235, 235, 240),
+    TextDimColor = Color3.fromRGB(150, 150, 160),
+    DangerColor = Color3.fromRGB(220, 60, 60),
+    SuccessColor = Color3.fromRGB(60, 200, 120),
+}
 
-    for property, value in pairs(properties or {}) do
-        object[property] = value
+-- ================================
+-- SISTEMA DE CORES OBSIDIAN
+-- ================================
+local ObsidianThemes = {
+    Default = {
+        Main = Color3.fromRGB(20, 20, 22),
+        Surface = Color3.fromRGB(30, 30, 35),
+        Border = Color3.fromRGB(45, 45, 55),
+        Text = Color3.fromRGB(235, 235, 240),
+        TextDim = Color3.fromRGB(150, 150, 160),
+        Accent = Color3.fromRGB(120, 80, 255),
+        Danger = Color3.fromRGB(220, 60, 60),
+        Success = Color3.fromRGB(60, 200, 120),
+        Hover = Color3.fromRGB(40, 40, 48),
+        Active = Color3.fromRGB(120, 80, 255),
+    },
+    Dark = {
+        Main = Color3.fromRGB(15, 15, 17),
+        Surface = Color3.fromRGB(25, 25, 30),
+        Border = Color3.fromRGB(35, 35, 42),
+        Text = Color3.fromRGB(230, 230, 235),
+        TextDim = Color3.fromRGB(130, 130, 140),
+        Accent = Color3.fromRGB(140, 100, 255),
+        Danger = Color3.fromRGB(240, 70, 70),
+        Success = Color3.fromRGB(70, 210, 130),
+        Hover = Color3.fromRGB(35, 35, 42),
+        Active = Color3.fromRGB(140, 100, 255),
+    },
+    Light = {
+        Main = Color3.fromRGB(245, 245, 248),
+        Surface = Color3.fromRGB(235, 235, 240),
+        Border = Color3.fromRGB(210, 210, 218),
+        Text = Color3.fromRGB(30, 30, 35),
+        TextDim = Color3.fromRGB(100, 100, 110),
+        Accent = Color3.fromRGB(100, 60, 220),
+        Danger = Color3.fromRGB(200, 40, 40),
+        Success = Color3.fromRGB(40, 180, 100),
+        Hover = Color3.fromRGB(225, 225, 232),
+        Active = Color3.fromRGB(100, 60, 220),
+    },
+    Amber = {
+        Main = Color3.fromRGB(20, 18, 15),
+        Surface = Color3.fromRGB(30, 27, 23),
+        Border = Color3.fromRGB(45, 40, 35),
+        Text = Color3.fromRGB(240, 235, 225),
+        TextDim = Color3.fromRGB(160, 150, 135),
+        Accent = Color3.fromRGB(255, 170, 50),
+        Danger = Color3.fromRGB(220, 60, 60),
+        Success = Color3.fromRGB(60, 200, 120),
+        Hover = Color3.fromRGB(40, 36, 30),
+        Active = Color3.fromRGB(255, 170, 50),
+    },
+    Emerald = {
+        Main = Color3.fromRGB(15, 20, 17),
+        Surface = Color3.fromRGB(24, 30, 27),
+        Border = Color3.fromRGB(38, 45, 40),
+        Text = Color3.fromRGB(230, 240, 235),
+        TextDim = Color3.fromRGB(140, 160, 150),
+        Accent = Color3.fromRGB(50, 200, 140),
+        Danger = Color3.fromRGB(220, 60, 60),
+        Success = Color3.fromRGB(60, 200, 120),
+        Hover = Color3.fromRGB(34, 40, 36),
+        Active = Color3.fromRGB(50, 200, 140),
+    },
+    Rose = {
+        Main = Color3.fromRGB(22, 16, 18),
+        Surface = Color3.fromRGB(34, 26, 30),
+        Border = Color3.fromRGB(50, 40, 45),
+        Text = Color3.fromRGB(240, 225, 230),
+        TextDim = Color3.fromRGB(160, 140, 148),
+        Accent = Color3.fromRGB(230, 80, 120),
+        Danger = Color3.fromRGB(220, 60, 60),
+        Success = Color3.fromRGB(60, 200, 120),
+        Hover = Color3.fromRGB(44, 35, 39),
+        Active = Color3.fromRGB(230, 80, 120),
+    }
+}
+
+-- ================================
+-- NÚCLEO DA BIBLIOTECA
+-- ================================
+local ObsidianLib = {
+    Elements = {},
+    ThemeObjects = {},
+    Connections = {},
+    Flags = {},
+    Keybinding = false,
+    SelectedTheme = "Default",
+    Folder = nil,
+    SaveCfg = false,
+    Themes = ObsidianThemes,
+    Toggles = {},
+    Windows = {},
+}
+
+-- ================================
+-- FUNÇÕES DE UTILIDADE
+-- ================================
+local function GetIcon(IconName)
+    local Icons = {}
+    local Success, Response = pcall(function()
+        Icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
+    end)
+    if Success and Icons[IconName] then
+        return Icons[IconName]
     end
-
-    return object
+    return nil
 end
 
-local function Corner(parent, radius)
-    return Create("UICorner", {
-        Parent = parent,
-        CornerRadius = UDim.new(0, radius or 6)
-    })
-end
-
-local function Stroke(parent, color, transparency)
-    return Create("UIStroke", {
-        Parent = parent,
-        Color = color or Theme.Stroke,
-        Transparency = transparency or 0,
-        Thickness = 1
-    })
-end
-
-local function Tween(object, properties, duration)
-    return TweenService:Create(
-        object,
-        TweenInfo.new(
-            duration or 0.2,
-            Enum.EasingStyle.Quart,
-            Enum.EasingDirection.Out
-        ),
-        properties
-    )
-end
-
-local function MakeDraggable(frame, handle)
-    local dragging = false
-    local dragStart
-    local startPosition
-
-    handle = handle or frame
-
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPosition = frame.Position
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-
-            frame.Position = UDim2.new(
-                startPosition.X.Scale,
-                startPosition.X.Offset + delta.X,
-                startPosition.Y.Scale,
-                startPosition.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-end
-
-local function GetParent()
-    local success, result = pcall(function()
-        return CoreGui
-    end)
-
-    if success then
-        return result
+local function Create(Name, Properties, Children)
+    local Object = Instance.new(Name)
+    for i, v in next, Properties or {} do
+        Object[i] = v
     end
-
-    return LocalPlayer:WaitForChild("PlayerGui")
+    for i, v in next, Children or {} do
+        v.Parent = Object
+    end
+    return Object
 end
 
---------------------------------------------------
--- WINDOW
---------------------------------------------------
+local function Round(Number, Factor)
+    local Result = math.floor(Number/Factor + (math.sign(Number) * 0.5)) * Factor
+    if Result < 0 then Result = Result + Factor end
+    return Result
+end
 
-function BetterOrion:CreateWindow(options)
-    options = options or {}
+local function PackColor(Color)
+    if typeof(Color) ~= "Color3" then return nil end
+    return {R = Color.R * 255, G = Color.G * 255, B = Color.B * 255}
+end
 
-    local Window = {}
-    Window.__index = Window
+local function UnpackColor(Color)
+    if not Color or not Color.R then return Color3.fromRGB(255, 255, 255) end
+    return Color3.fromRGB(Color.R, Color.G, Color.B)
+end
 
-    Window.Name = options.Name or "BetterOrion V2"
-    Window.Size = options.Size or UDim2.fromOffset(650, 450)
-    Window.Tabs = {}
-    Window.CurrentTab = nil
+local function CheckKey(Table, Key)
+    for _, v in next, Table do
+        if v == Key then
+            return true
+        end
+    end
+    return false
+end
 
-    local ScreenGui = Create("ScreenGui", {
-        Name = "BetterOrionV2",
-        ResetOnSpawn = false,
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-        Parent = GetParent()
+local function AddConnection(Signal, Function)
+    local SignalConnect = Signal:Connect(Function)
+    table.insert(ObsidianLib.Connections, SignalConnect)
+    return SignalConnect
+end
+
+local function ReturnProperty(Object)
+    if Object:IsA("Frame") or Object:IsA("TextButton") then
+        return "BackgroundColor3"
+    end
+    if Object:IsA("ScrollingFrame") then
+        return "ScrollBarImageColor3"
+    end
+    if Object:IsA("UIStroke") then
+        return "Color"
+    end
+    if Object:IsA("TextLabel") or Object:IsA("TextBox") then
+        return "TextColor3"
+    end
+    if Object:IsA("ImageLabel") or Object:IsA("ImageButton") then
+        return "ImageColor3"
+    end
+    return nil
+end
+
+local function AddThemeObject(Object, Type)
+    if not ObsidianLib.ThemeObjects[Type] then
+        ObsidianLib.ThemeObjects[Type] = {}
+    end
+    table.insert(ObsidianLib.ThemeObjects[Type], Object)
+    local themeColor = ObsidianLib.Themes[ObsidianLib.SelectedTheme][Type]
+    local property = ReturnProperty(Object)
+    if themeColor and property and Object[property] ~= nil then
+        Object[property] = themeColor
+    end
+    return Object
+end
+
+local function lighterHSV(color: Color3, factor: number)
+    factor = math.clamp(factor, 0, 1)
+    local h, s, v = color:ToHSV()
+    v = math.clamp(v + factor, 0, 1)
+    s = math.clamp(s * (1 - factor * 0.25), 0, 1)
+    return Color3.fromHSV(h, s, v)
+end
+
+local function darkerColor(color, factor)
+    factor = math.clamp(factor, 0, 1)
+    return Color3.new(color.R * factor, color.G * factor, color.B * factor)
+end
+
+local function createGradientFromColor(baseColor, darkFactor)
+    local dark = darkerColor(baseColor, darkFactor)
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, baseColor),
+        ColorSequenceKeypoint.new(0.5, dark),
+        ColorSequenceKeypoint.new(1, baseColor),
     })
+end
 
-    Window.ScreenGui = ScreenGui
-
-    local Main = Create("Frame", {
-        Name = "Main",
-        Parent = ScreenGui,
-        Size = Window.Size,
-        Position = UDim2.new(0.5, -Window.Size.X.Offset / 2, 0.5, -Window.Size.Y.Offset / 2),
-        BackgroundColor3 = Theme.Background,
-        BorderSizePixel = 0
-    })
-
-    Corner(Main, 8)
-    Stroke(Main)
-
-    Window.Main = Main
-
-    --------------------------------------------------
-    -- TOP BAR
-    --------------------------------------------------
-
-    local TopBar = Create("Frame", {
-        Name = "TopBar",
-        Parent = Main,
-        Size = UDim2.new(1, 0, 0, 48),
-        BackgroundColor3 = Theme.Secondary,
-        BorderSizePixel = 0
-    })
-
-    Corner(TopBar, 8)
-
-    local Title = Create("TextLabel", {
-        Name = "Title",
-        Parent = TopBar,
-        Position = UDim2.fromOffset(16, 0),
-        Size = UDim2.new(1, -100, 1, 0),
-        BackgroundTransparency = 1,
-        Font = Enum.Font.Code,
-        Text = Window.Name,
-        TextColor3 = Theme.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-
-    Window.Title = Title
-
-    local Close = Create("TextButton", {
-        Name = "Close",
-        Parent = TopBar,
-        Position = UDim2.new(1, -42, 0, 8),
-        Size = UDim2.fromOffset(32, 32),
-        BackgroundColor3 = Theme.Tertiary,
-        BorderSizePixel = 0,
-        AutoButtonColor = false,
-        Font = Enum.Font.Code,
-        Text = "×",
-        TextColor3 = Theme.SubText,
-        TextSize = 20
-    })
-
-    Corner(Close, 6)
-
-    Close.MouseEnter:Connect(function()
-        Tween(Close, {
-            BackgroundColor3 = Theme.Accent,
-            TextColor3 = Color3.new(1, 1, 1)
-        }):Play()
-    end)
-
-    Close.MouseLeave:Connect(function()
-        Tween(Close, {
-            BackgroundColor3 = Theme.Tertiary,
-            TextColor3 = Theme.SubText
-        }):Play()
-    end)
-
-    Close.MouseButton1Click:Connect(function()
-        Main.Visible = false
-    end)
-
-    local Minimize = Create("TextButton", {
-        Name = "Minimize",
-        Parent = TopBar,
-        Position = UDim2.new(1, -78, 0, 8),
-        Size = UDim2.fromOffset(32, 32),
-        BackgroundColor3 = Theme.Tertiary,
-        BorderSizePixel = 0,
-        AutoButtonColor = false,
-        Font = Enum.Font.Code,
-        Text = "—",
-        TextColor3 = Theme.SubText,
-        TextSize = 18
-    })
-
-    Corner(Minimize, 6)
-
-    local minimized = false
-
-    Minimize.MouseButton1Click:Connect(function()
-        minimized = not minimized
-
-        for _, child in ipairs(Main:GetChildren()) do
-            if child ~= TopBar and child ~= Title and child ~= Close and child ~= Minimize then
-                child.Visible = not minimized
+-- ================================
+-- SISTEMA DE TEMAS
+-- ================================
+function ObsidianLib:SetTheme(themeName)
+    if themeName and ObsidianLib.Themes[themeName] then
+        ObsidianLib.SelectedTheme = themeName
+    end
+    
+    local themeData = ObsidianLib.Themes[ObsidianLib.SelectedTheme]
+    if not themeData then return end
+    
+    for typeName, objects in pairs(ObsidianLib.ThemeObjects) do
+        local color = themeData[typeName]
+        if color then
+            for _, obj in ipairs(objects) do
+                local prop = ReturnProperty(obj)
+                if prop and obj[prop] ~= nil then
+                    obj[prop] = color
+                end
             end
         end
-
-        if minimized then
-            Tween(Main, {
-                Size = UDim2.new(
-                    Window.Size.X.Scale,
-                    Window.Size.X.Offset,
-                    0,
-                    48
-                )
-            }):Play()
-        else
-            Tween(Main, {
-                Size = Window.Size
-            }):Play()
+    end
+    
+    -- Atualizar toggles
+    for _, toggle in ipairs(ObsidianLib.Toggles) do
+        if toggle and toggle.Box and toggle.Box.Parent then
+            local activeTheme = ObsidianLib.Themes[ObsidianLib.SelectedTheme]
+            local accolor = toggle.uccolor and toggle.ccolor or activeTheme.Accent
+            
+            if toggle.Value then
+                TweenService:Create(toggle.Box, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {BackgroundColor3 = accolor}):Play()
+                if toggle.Box:FindFirstChild("Stroke") then
+                    TweenService:Create(toggle.Box.Stroke, TweenInfo.new(0.1), {Color = accolor}):Play()
+                end
+            else
+                TweenService:Create(toggle.Box, TweenInfo.new(0.1), {BackgroundColor3 = activeTheme.Surface}):Play()
+                if toggle.Box:FindFirstChild("Stroke") then
+                    TweenService:Create(toggle.Box.Stroke, TweenInfo.new(0.1), {Color = activeTheme.Border}):Play()
+                end
+            end
         end
-    end)
+    end
+    
+    -- Salvar tema customizado
+    ObsidianLib:SaveThemeCfg()
+end
 
-    MakeDraggable(Main, TopBar)
+-- ================================
+-- CRIAÇÃO DE ELEMENTOS BÁSICOS
+-- ================================
+local function CreateElement(ElementName, ElementFunction)
+    ObsidianLib.Elements[ElementName] = function(...)
+        return ElementFunction(...)
+    end
+end
 
-    --------------------------------------------------
-    -- SIDEBAR
-    --------------------------------------------------
+CreateElement("Corner", function(Scale, Offset)
+    return Create("UICorner", {
+        CornerRadius = UDim.new(Scale or 0, Offset or ObsidianConfig.CornerRadius)
+    })
+end)
 
-    local Sidebar = Create("Frame", {
-        Name = "Sidebar",
-        Parent = Main,
-        Position = UDim2.fromOffset(0, 48),
-        Size = UDim2.new(0, 145, 1, -48),
-        BackgroundColor3 = Theme.Secondary,
+CreateElement("Stroke", function(Color, Thickness, Transparency)
+    return Create("UIStroke", {
+        Color = Color or ObsidianConfig.BorderColor,
+        Thickness = Thickness or 1,
+        Transparency = Transparency or 0,
+    })
+end)
+
+CreateElement("List", function(Scale, Offset)
+    return Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(Scale or 0, Offset or 6)
+    })
+end)
+
+CreateElement("Padding", function(Bottom, Left, Right, Top)
+    return Create("UIPadding", {
+        PaddingBottom = UDim.new(0, Bottom or 4),
+        PaddingLeft = UDim.new(0, Left or 4),
+        PaddingRight = UDim.new(0, Right or 4),
+        PaddingTop = UDim.new(0, Top or 4)
+    })
+end)
+
+CreateElement("Frame", function(Color)
+    return Create("Frame", {
+        BackgroundColor3 = Color or ObsidianConfig.SurfaceColor,
         BorderSizePixel = 0
     })
+end)
 
-    Window.Sidebar = Sidebar
+CreateElement("RoundFrame", function(Color, Scale, Offset)
+    return Create("Frame", {
+        BackgroundColor3 = Color or ObsidianConfig.SurfaceColor,
+        BorderSizePixel = 0
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(Scale or 0, Offset or ObsidianConfig.CornerRadius)
+        })
+    })
+end)
 
-    local TabList = Create("ScrollingFrame", {
-        Name = "TabList",
-        Parent = Sidebar,
-        Position = UDim2.fromOffset(8, 10),
-        Size = UDim2.new(1, -16, 1, -20),
+CreateElement("Button", function()
+    return Create("TextButton", {
+        Text = "",
+        AutoButtonColor = false,
         BackgroundTransparency = 1,
+        BorderSizePixel = 0
+    })
+end)
+
+CreateElement("ScrollFrame", function(Color, Width)
+    return Create("ScrollingFrame", {
+        BackgroundTransparency = 1,
+        MidImage = "rbxassetid://7445543667",
+        BottomImage = "rbxassetid://7445543667",
+        TopImage = "rbxassetid://7445543667",
+        ScrollBarImageColor3 = Color or ObsidianConfig.BorderColor,
         BorderSizePixel = 0,
-        ScrollBarThickness = 2,
-        ScrollBarImageColor3 = Theme.Accent,
-        CanvasSize = UDim2.new()
+        ScrollBarThickness = Width or 4,
+        CanvasSize = UDim2.new(0, 0, 0, 0)
     })
+end)
 
-    Create("UIListLayout", {
-        Parent = TabList,
-        Padding = UDim.new(0, 5),
-        SortOrder = Enum.SortOrder.LayoutOrder
-    })
-
-    --------------------------------------------------
-    -- CONTENT
-    --------------------------------------------------
-
-    local Content = Create("Frame", {
-        Name = "Content",
-        Parent = Main,
-        Position = UDim2.fromOffset(145, 48),
-        Size = UDim2.new(1, -145, 1, -48),
+CreateElement("Image", function(ImageID)
+    local ImageNew = Create("ImageLabel", {
+        Image = ImageID,
         BackgroundTransparency = 1
     })
+    local icon = GetIcon(ImageID)
+    if icon then ImageNew.Image = icon end
+    return ImageNew
+end)
 
-    Window.Content = Content
+CreateElement("ImageButton", function(ImageID)
+    local Image = Create("ImageButton", {
+        Image = ImageID,
+        BackgroundTransparency = 1
+    })
+    local icon = GetIcon(ImageID)
+    if icon then Image.Image = icon end
+    return Image
+end)
 
-    --------------------------------------------------
-    -- TAB
-    --------------------------------------------------
+CreateElement("Label", function(Text, TextSize, Transparency)
+    return Create("TextLabel", {
+        Text = Text or "",
+        TextColor3 = ObsidianConfig.TextColor,
+        TextTransparency = Transparency or 0,
+        TextSize = TextSize or 14,
+        Font = ObsidianConfig.Font,
+        RichText = true,
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+end)
 
-    function Window:AddTab(options)
-        options = options or {}
+CreateElement("TFrame", function()
+    return Create("Frame", {
+        BackgroundTransparency = 1
+    })
+end)
 
-        local Tab = {}
-        Tab.Name = options.Name or "Tab"
-        Tab.Icon = options.Icon
-        Tab.Sections = {}
-
-        local TabButton = Create("TextButton", {
-            Name = Tab.Name,
-            Parent = TabList,
-            Size = UDim2.new(1, 0, 0, 36),
-            BackgroundColor3 = Theme.Secondary,
-            BorderSizePixel = 0,
-            AutoButtonColor = false,
-            Font = Enum.Font.Code,
-            Text = Tab.Name,
-            TextColor3 = Theme.SubText,
-            TextSize = 13
-        })
-
-        Corner(TabButton, 6)
-
-        local TabPage = Create("ScrollingFrame", {
-            Name = Tab.Name .. "_Page",
-            Parent = Content,
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.fromOffset(10, 10),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            ScrollBarThickness = 2,
-            ScrollBarImageColor3 = Theme.Accent,
-            Visible = false,
-            CanvasSize = UDim2.new()
-        })
-
-        Create("UIListLayout", {
-            Parent = TabPage,
-            Padding = UDim.new(0, 8),
-            SortOrder = Enum.SortOrder.LayoutOrder
-        })
-
-        Tab.Button = TabButton
-        Tab.Page = TabPage
-
-        function Tab:Show()
-            for _, other in pairs(Window.Tabs) do
-                other.Page.Visible = false
-
-                Tween(other.Button, {
-                    BackgroundColor3 = Theme.Secondary,
-                    TextColor3 = Theme.SubText
-                }):Play()
-            end
-
-            TabPage.Visible = true
-
-            Tween(TabButton, {
-                BackgroundColor3 = Theme.Accent,
-                TextColor3 = Color3.new(1, 1, 1)
+-- ================================
+-- SISTEMA DE DRAG
+-- ================================
+local function MakeDraggable(DragPoint, Main)
+    local Dragging, DragInput, MousePos, FramePos = false
+    AddConnection(DragPoint.InputBegan, function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+            MousePos = Input.Position
+            FramePos = Main.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then
+                    Dragging = false
+                end
+            end)
+        end
+    end)
+    AddConnection(DragPoint.InputChanged, function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            DragInput = Input
+        end
+    end)
+    AddConnection(UserInputService.InputChanged, function(Input)
+        if Input == DragInput and Dragging then
+            local Delta = Input.Position - MousePos
+            TweenService:Create(Main, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Position = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)
             }):Play()
-
-            Window.CurrentTab = Tab
         end
-
-        TabButton.MouseButton1Click:Connect(function()
-            Tab:Show()
-        end)
-
-        --------------------------------------------------
-        -- SECTION
-        --------------------------------------------------
-
-        function Tab:AddSection(name)
-            local Section = {}
-
-            local Container = Create("Frame", {
-                Name = name or "Section",
-                Parent = TabPage,
-                Size = UDim2.new(1, -5, 0, 0),
-                BackgroundColor3 = Theme.Secondary,
-                BorderSizePixel = 0,
-                AutomaticSize = Enum.AutomaticSize.Y
-            })
-
-            Corner(Container, 7)
-            Stroke(Container)
-
-            Create("UIPadding", {
-                Parent = Container,
-                PaddingTop = UDim.new(0, 10),
-                PaddingBottom = UDim.new(0, 10),
-                PaddingLeft = UDim.new(0, 10),
-                PaddingRight = UDim.new(0, 10)
-            })
-
-            local SectionTitle = Create("TextLabel", {
-                Parent = Container,
-                Size = UDim2.new(1, 0, 0, 24),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = name or "Section",
-                TextColor3 = Theme.Text,
-                TextSize = 14,
-                TextXAlignment = Enum.TextXAlignment.Left
-            })
-
-            local Elements = Create("Frame", {
-                Parent = Container,
-                Position = UDim2.fromOffset(0, 30),
-                Size = UDim2.new(1, 0, 0, 0),
-                BackgroundTransparency = 1,
-                AutomaticSize = Enum.AutomaticSize.Y
-            })
-
-            Create("UIListLayout", {
-                Parent = Elements,
-                Padding = UDim.new(0, 6),
-                SortOrder = Enum.SortOrder.LayoutOrder
-            })
-
-            --------------------------------------------------
-            -- BUTTON
-            --------------------------------------------------
-
-            function Section:AddButton(options)
-                options = options or {}
-
-                local Button = Create("TextButton", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 34),
-                    BackgroundColor3 = Theme.Tertiary,
-                    BorderSizePixel = 0,
-                    AutoButtonColor = false,
-                    Font = Enum.Font.Code,
-                    Text = options.Name or "Button",
-                    TextColor3 = Theme.Text,
-                    TextSize = 13
-                })
-
-                Corner(Button, 5)
-
-                Button.MouseEnter:Connect(function()
-                    Tween(Button, {
-                        BackgroundColor3 = Theme.Accent
-                    }):Play()
-                end)
-
-                Button.MouseLeave:Connect(function()
-                    Tween(Button, {
-                        BackgroundColor3 = Theme.Tertiary
-                    }):Play()
-                end)
-
-                Button.MouseButton1Click:Connect(function()
-                    if options.Callback then
-                        task.spawn(options.Callback)
-                    end
-                end)
-
-                return Button
-            end
-
-            --------------------------------------------------
-            -- TOGGLE
-            --------------------------------------------------
-
-            function Section:AddToggle(options)
-                options = options or {}
-
-                local state = options.Default or false
-
-                local Holder = Create("Frame", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 38),
-                    BackgroundColor3 = Theme.Tertiary,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Holder, 5)
-
-                local Label = Create("TextLabel", {
-                    Parent = Holder,
-                    Position = UDim2.fromOffset(10, 0),
-                    Size = UDim2.new(1, -65, 1, 0),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Code,
-                    Text = options.Name or "Toggle",
-                    TextColor3 = Theme.Text,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-
-                local Switch = Create("TextButton", {
-                    Parent = Holder,
-                    Position = UDim2.new(1, -48, 0.5, -10),
-                    Size = UDim2.fromOffset(38, 20),
-                    BackgroundColor3 = Theme.ToggleOff,
-                    BorderSizePixel = 0,
-                    AutoButtonColor = false,
-                    Text = ""
-                })
-
-                Corner(Switch, 10)
-
-                local Circle = Create("Frame", {
-                    Parent = Switch,
-                    Position = UDim2.fromOffset(3, 3),
-                    Size = UDim2.fromOffset(14, 14),
-                    BackgroundColor3 = Color3.fromRGB(220, 220, 220),
-                    BorderSizePixel = 0
-                })
-
-                Corner(Circle, 20)
-
-                local Toggle = {}
-
-                function Toggle:Set(value)
-                    state = value
-
-                    if state then
-                        Tween(Switch, {
-                            BackgroundColor3 = Theme.Accent
-                        }):Play()
-
-                        Tween(Circle, {
-                            Position = UDim2.new(1, -17, 0, 3)
-                        }):Play()
-                    else
-                        Tween(Switch, {
-                            BackgroundColor3 = Theme.ToggleOff
-                        }):Play()
-
-                        Tween(Circle, {
-                            Position = UDim2.fromOffset(3, 3)
-                        }):Play()
-                    end
-
-                    if options.Callback then
-                        task.spawn(options.Callback, state)
-                    end
-                end
-
-                function Toggle:Get()
-                    return state
-                end
-
-                Switch.MouseButton1Click:Connect(function()
-                    Toggle:Set(not state)
-                end)
-
-                if state then
-                    Toggle:Set(true)
-                end
-
-                return Toggle
-            end
-
-            --------------------------------------------------
-            -- SLIDER
-            --------------------------------------------------
-
-            function Section:AddSlider(options)
-                options = options or {}
-
-                local min = options.Min or 0
-                local max = options.Max or 100
-                local value = math.clamp(options.Default or min, min, max)
-
-                local Holder = Create("Frame", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 55),
-                    BackgroundColor3 = Theme.Tertiary,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Holder, 5)
-
-                local Label = Create("TextLabel", {
-                    Parent = Holder,
-                    Position = UDim2.fromOffset(10, 4),
-                    Size = UDim2.new(1, -80, 0, 20),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Code,
-                    Text = options.Name or "Slider",
-                    TextColor3 = Theme.Text,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-
-                local ValueLabel = Create("TextLabel", {
-                    Parent = Holder,
-                    Position = UDim2.new(1, -65, 0, 4),
-                    Size = UDim2.fromOffset(55, 20),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Code,
-                    Text = tostring(value),
-                    TextColor3 = Theme.SubText,
-                    TextSize = 12,
-                    TextXAlignment = Enum.TextXAlignment.Right
-                })
-
-                local Bar = Create("Frame", {
-                    Parent = Holder,
-                    Position = UDim2.fromOffset(10, 34),
-                    Size = UDim2.new(1, -20, 0, 6),
-                    BackgroundColor3 = Theme.ToggleOff,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Bar, 5)
-
-                local Fill = Create("Frame", {
-                    Parent = Bar,
-                    Size = UDim2.new((value - min) / (max - min), 0, 1, 0),
-                    BackgroundColor3 = Theme.Accent,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Fill, 5)
-
-                local Slider = {}
-                local dragging = false
-
-                function Slider:Set(newValue)
-                    value = math.clamp(newValue, min, max)
-
-                    local percent = (value - min) / (max - min)
-
-                    Fill.Size = UDim2.new(percent, 0, 1, 0)
-                    ValueLabel.Text = tostring(math.floor(value))
-
-                    if options.Callback then
-                        task.spawn(options.Callback, value)
-                    end
-                end
-
-                function Slider:Get()
-                    return value
-                end
-
-                local function Update(input)
-                    local percent = math.clamp(
-                        (input.Position.X - Bar.AbsolutePosition.X) /
-                        Bar.AbsoluteSize.X,
-                        0,
-                        1
-                    )
-
-                    Slider:Set(min + ((max - min) * percent))
-                end
-
-                Bar.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging = true
-                        Update(input)
-                    end
-                end)
-
-                UserInputService.InputChanged:Connect(function(input)
-                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        Update(input)
-                    end
-                end)
-
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging = false
-                    end
-                end)
-
-                return Slider
-            end
-
-            --------------------------------------------------
-            -- LABEL
-            --------------------------------------------------
-
-            function Section:AddLabel(text)
-                return Create("TextLabel", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 28),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Code,
-                    Text = text or "",
-                    TextColor3 = Theme.SubText,
-                    TextSize = 12,
-                    TextWrapped = true,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-            end
-
-            --------------------------------------------------
-            -- DROPDOWN
-            --------------------------------------------------
-
-            function Section:AddDropdown(options)
-                options = options or {}
-
-                local values = options.Values or {}
-                local current = options.Default or values[1]
-
-                local Holder = Create("Frame", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 38),
-                    BackgroundColor3 = Theme.Tertiary,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Holder, 5)
-
-                local Button = Create("TextButton", {
-                    Parent = Holder,
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    AutoButtonColor = false,
-                    Font = Enum.Font.Code,
-                    Text = (options.Name or "Dropdown") .. ": " .. tostring(current or "None"),
-                    TextColor3 = Theme.Text,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-
-                Create("UIPadding", {
-                    Parent = Button,
-                    PaddingLeft = UDim.new(0, 10)
-                })
-
-                local Dropdown = {}
-                local opened = false
-
-                local List = Create("Frame", {
-                    Parent = Holder,
-                    Position = UDim2.new(0, 0, 1, 5),
-                    Size = UDim2.new(1, 0, 0, 0),
-                    BackgroundColor3 = Theme.Secondary,
-                    BorderSizePixel = 0,
-                    Visible = false,
-                    ZIndex = 20
-                })
-
-                Corner(List, 5)
-                Stroke(List)
-
-                local Layout = Create("UIListLayout", {
-                    Parent = List,
-                    Padding = UDim.new(0, 2)
-                })
-
-                local function Refresh()
-                    for _, child in ipairs(List:GetChildren()) do
-                        if child:IsA("TextButton") then
-                            child:Destroy()
-                        end
-                    end
-
-                    for _, item in ipairs(values) do
-                        local Option = Create("TextButton", {
-                            Parent = List,
-                            Size = UDim2.new(1, 0, 0, 30),
-                            BackgroundColor3 = Theme.Tertiary,
-                            BorderSizePixel = 0,
-                            AutoButtonColor = false,
-                            Font = Enum.Font.Code,
-                            Text = tostring(item),
-                            TextColor3 = Theme.Text,
-                            TextSize = 12,
-                            ZIndex = 21
-                        })
-
-                        Option.MouseButton1Click:Connect(function()
-                            current = item
-                            Button.Text = (options.Name or "Dropdown") .. ": " .. tostring(item)
-
-                            opened = false
-                            List.Visible = false
-
-                            if options.Callback then
-                                task.spawn(options.Callback, item)
-                            end
-                        end)
-                    end
-
-                    List.Size = UDim2.new(
-                        1,
-                        0,
-                        0,
-                        math.min(#values * 32, 150)
-                    )
-                end
-
-                Button.MouseButton1Click:Connect(function()
-                    opened = not opened
-                    List.Visible = opened
-                end)
-
-                Refresh()
-
-                function Dropdown:Set(value)
-                    current = value
-                    Button.Text = (options.Name or "Dropdown") .. ": " .. tostring(value)
-
-                    if options.Callback then
-                        task.spawn(options.Callback, value)
-                    end
-                end
-
-                function Dropdown:Get()
-                    return current
-                end
-
-                function Dropdown:SetValues(newValues)
-                    values = newValues or {}
-                    Refresh()
-                end
-
-                return Dropdown
-            end
-
-            --------------------------------------------------
-            -- KEYBIND
-            --------------------------------------------------
-
-            function Section:AddKeybind(options)
-                options = options or {}
-
-                local key = options.Default or Enum.KeyCode.RightShift
-
-                local Holder = Create("Frame", {
-                    Parent = Elements,
-                    Size = UDim2.new(1, 0, 0, 38),
-                    BackgroundColor3 = Theme.Tertiary,
-                    BorderSizePixel = 0
-                })
-
-                Corner(Holder, 5)
-
-                local Label = Create("TextLabel", {
-                    Parent = Holder,
-                    Position = UDim2.fromOffset(10, 0),
-                    Size = UDim2.new(1, -100, 1, 0),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Code,
-                    Text = options.Name or "Keybind",
-                    TextColor3 = Theme.Text,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-
-                local KeyButton = Create("TextButton", {
-                    Parent = Holder,
-                    Position = UDim2.new(1, -90, 0, 5),
-                    Size = UDim2.fromOffset(80, 28),
-                    BackgroundColor3 = Theme.Background,
-                    BorderSizePixel = 0,
-                    AutoButtonColor = false,
-                    Font = Enum.Font.Code,
-                    Text = key.Name,
-                    TextColor3 = Theme.Text,
-                    TextSize = 12
-                })
-
-                Corner(KeyButton, 5)
-
-                local listening = false
-
-                KeyButton.MouseButton1Click:Connect(function()
-                    listening = true
-                    KeyButton.Text = "..."
-
-                    local connection
-                    connection = UserInputService.InputBegan:Connect(function(input, processed)
-                        if processed then
-                            return
-                        end
-
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            key = input.KeyCode
-                            KeyButton.Text = key.Name
-                            listening = false
-
-                            connection:Disconnect()
-                        end
-                    end)
-                end)
-
-                UserInputService.InputBegan:Connect(function(input, processed)
-                    if processed or listening then
-                        return
-                    end
-
-                    if input.KeyCode == key then
-                        if options.Callback then
-                            task.spawn(options.Callback)
-                        end
-                    end
-                end)
-
-                return {
-                    Set = function(_, newKey)
-                        key = newKey
-                        KeyButton.Text = key.Name
-                    end,
-
-                    Get = function()
-                        return key
-                    end
-                }
-            end
-
-            return Section
-        end
-
-        table.insert(Window.Tabs, Tab)
-
-        if not Window.CurrentTab then
-            Tab:Show()
-        end
-
-        return Tab
-    end
-
-    --------------------------------------------------
-    -- SETTINGS
-    --------------------------------------------------
-
-    function Window:SetAccent(color)
-        Theme.Accent = color
-    end
-
-    function Window:Toggle()
-        Main.Visible = not Main.Visible
-    end
-
-    function Window:Destroy()
-        ScreenGui:Destroy()
-    end
-
-    return setmetatable(Window, BetterOrion)
+    end)
 end
 
---------------------------------------------------
--- RETURN LIBRARY
---------------------------------------------------
+-- ================================
+-- SISTEMA DE NOTIFICAÇÕES MELHORADO
+-- ================================
+local NotificationHolder = Create("Frame", {
+    Position = UDim2.new(1, -20, 1, -20),
+    Size = UDim2.new(0, 340, 1, -40),
+    AnchorPoint = Vector2.new(1, 1),
+    BackgroundTransparency = 1,
+    Parent = nil -- Será definido na criação da janela
+}, {
+    Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 8),
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        VerticalAlignment = Enum.VerticalAlignment.Bottom
+    })
+})
 
-return BetterOrion
+function ObsidianLib:MakeNotification(Config)
+    Config = Config or {}
+    Config.Title = Config.Title or "Notification"
+    Config.Description = Config.Description or "Message"
+    Config.Icon = Config.Icon or "rbxassetid://4384403532"
+    Config.Duration = Config.Duration or 15
+    Config.Type = Config.Type or "info" -- info, success, warning, error
+    
+    local typeColors = {
+        info = ObsidianConfig.AccentColor,
+        success = ObsidianConfig.SuccessColor,
+        warning = Color3.fromRGB(255, 170, 50),
+        error = ObsidianConfig.DangerColor,
+    }
+    
+    local accentColor = typeColors[Config.Type] or ObsidianConfig.AccentColor
+    
+    task.spawn(function()
+        local NotificationParent = Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            BackgroundTransparency = 1,
+            Parent = NotificationHolder,
+            LayoutOrder = 999
+        })
+        
+        local NotificationFrame = Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 0),
+            BackgroundColor3 = ObsidianConfig.SurfaceColor,
+            BackgroundTransparency = 0,
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Position = UDim2.new(1, 20, 0, 0),
+            ClipsDescendants = true,
+            Parent = NotificationParent
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(0, ObsidianConfig.CornerRadius)}),
+            Create("UIStroke", {
+                Color = ObsidianConfig.BorderColor,
+                Thickness = 1,
+            }),
+            Create("UIPadding", {
+                PaddingLeft = UDim.new(0, 14),
+                PaddingRight = UDim.new(0, 14),
+                PaddingTop = UDim.new(0, 12),
+                PaddingBottom = UDim.new(0, 12),
+            }),
+            
+            -- Barra de cor lateral
+            Create("Frame", {
+                Size = UDim2.new(0, 4, 1, -20),
+                Position = UDim2.new(0, 0, 0, 10),
+                BackgroundColor3 = accentColor,
+                BorderSizePixel = 0,
+            }, {
+                Create("UICorner", {CornerRadius = UDim.new(0, 4)})
+            }),
+            
+            -- Ícone
+            Create("ImageLabel", {
+                Name = "Icon",
+                Image = Config.Icon,
+                Size = UDim2.new(0, 24, 0, 24),
+                Position = UDim2.new(0, 14, 0, 0),
+                BackgroundTransparency = 1,
+                ImageColor3 = ObsidianConfig.TextColor,
+            }),
+            
+            -- Título
+            Create("TextLabel", {
+                Name = "Title",
+                Text = Config.Title,
+                TextColor3 = ObsidianConfig.TextColor,
+                TextSize = 14,
+                Font = ObsidianConfig.FontBold,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -48, 0, 18),
+                Position = UDim2.new(0, 48, 0, 0),
+                TextXAlignment = Enum.TextXAlignment.Left,
+            }),
+            
+            -- Descrição
+            Create("TextLabel", {
+                Name = "Description",
+                Text = Config.Description,
+                TextColor3 = ObsidianConfig.TextDimColor,
+                TextSize = 13,
+                Font = ObsidianConfig.Font,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -48, 0, 0),
+                Position = UDim2.new(0, 48, 0, 22),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                AutomaticSize = Enum.AutomaticSize.Y,
+                TextWrapped = true,
+            }),
+            
+            -- Botão fechar
+            Create("TextButton", {
+                Name = "CloseBtn",
+                Text = "✕",
+                TextColor3 = ObsidianConfig.TextDimColor,
+                TextSize = 14,
+                Font = ObsidianConfig.Font,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(0, 24, 0, 24),
+                Position = UDim2.new(1, -28, 0, 4),
+                AnchorPoint = Vector2.new(1, 0),
+            }),
+        })
+        
+        -- Animação de entrada
+        TweenService:Create(NotificationFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {
+            Position = UDim2.new(0, 0, 0, 0)
+        }):Play()
+        
+        -- Botão fechar
+        NotificationFrame.CloseBtn.MouseButton1Click:Connect(function()
+            ObsidianLib:DestroyNotification(NotificationParent, NotificationFrame)
+        end)
+        
+        -- Auto fechar
+        task.wait(Config.Duration)
+        ObsidianLib:DestroyNotification(NotificationParent, NotificationFrame)
+    end)
+end
+
+function ObsidianLib:DestroyNotification(Parent, Frame)
+    if not Parent or not Parent.Parent then return end
+    TweenService:Create(Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+        Position = UDim2.new(1, 20, 0, 0),
+        BackgroundTransparency = 0.8,
+    }):Play()
+    TweenService:Create(Frame.UIStroke, TweenInfo.new(0.3), {
+        Transparency = 0.8,
+    }):Play()
+    task.wait(0.4)
+    Parent:Destroy()
+end
+
+-- ================================
+-- SISTEMA DE SALVAMENTO DE CONFIGURAÇÕES
+-- ================================
+function ObsidianLib:SaveConfig()
+    if not ObsidianLib.Folder or not ObsidianLib.SaveCfg then return end
+    
+    local Data = {}
+    for i, v in pairs(ObsidianLib.Flags) do
+        if v.Save then
+            if v.Type == "MultiColorpicker" then
+                if v.Pickers and #v.Pickers > 0 then
+                    local colorList = {}
+                    for index, picker in ipairs(v.Pickers) do
+                        colorList[index] = PackColor(picker.Value)
+                    end
+                    Data[i] = colorList
+                end
+            elseif v.Type == "Colorpicker" then
+                if v.Pickers and v.Pickers[1] then
+                    Data[i] = PackColor(v.Pickers[1].Value)
+                else
+                    Data[i] = PackColor(v.Value)
+                end
+            else
+                Data[i] = v.Value
+            end
+        end
+    end
+    
+    local filePath = ObsidianLib.Folder .. "/" .. game.GameId .. ".json"
+    writefile(filePath, HttpService:JSONEncode(Data))
+end
+
+function ObsidianLib:LoadConfig()
+    if not ObsidianLib.Folder or not ObsidianLib.SaveCfg then return end
+    
+    local filePath = ObsidianLib.Folder .. "/" .. game.GameId .. ".json"
+    if not isfile(filePath) then return end
+    
+    local Data = HttpService:JSONDecode(readfile(filePath))
+    for key, value in pairs(Data) do
+        local flag = ObsidianLib.Flags[key]
+        if flag then
+            if flag.Type == "MultiColorpicker" then
+                if type(value) == "table" and value.R == nil then
+                    for index, colorData in ipairs(value) do
+                        flag:Set(index, UnpackColor(colorData))
+                    end
+                else
+                    flag:Set(1, UnpackColor(value))
+                end
+            elseif flag.Type == "Colorpicker" then
+                flag:Set(UnpackColor(value))
+            elseif flag.Type == "Bind" then
+                local success, keyEnum = pcall(function()
+                    return Enum.KeyCode[value] or Enum.UserInputType[value]
+                end)
+                if success and keyEnum then
+                    flag:Set(keyEnum)
+                else
+                    flag:Set(value)
+                end
+            else
+                flag:Set(value)
+            end
+        end
+    end
+end
+
+-- ================================
+-- SISTEMA DE SALVAMENTO DE TEMAS
+-- ================================
+local THEME_FOLDER = "ObsidianTheme"
+local FILE_PATH = THEME_FOLDER .. "/" .. game.GameId .. ".json"
+
+if not isfolder(THEME_FOLDER) then
+    makefolder(THEME_FOLDER)
+end
+
+function ObsidianLib:SaveThemeCfg()
+    local themeData = ObsidianLib.Themes[ObsidianLib.SelectedTheme]
+    if not themeData then return end
+    
+    local Data = {}
+    for typeName, value in pairs(themeData) do
+        if typeof(value) == "Color3" then
+            Data[typeName] = PackColor(value)
+        end
+    end
+    
+    writefile(FILE_PATH, HttpService:JSONEncode(Data))
+end
+
+function ObsidianLib:LoadThemeCfg()
+    if not isfile(FILE_PATH) then return end
+    
+    local Data = HttpService:JSONDecode(readfile(FILE_PATH))
+    ObsidianLib.Themes.Custom = {}
+    for TypeName, Value in pairs(Data) do
+        ObsidianLib.Themes.Custom[TypeName] = UnpackColor(Value)
+    end
+    ObsidianLib.SelectedTheme = "Custom"
+    ObsidianLib:SetTheme()
+end
+
+-- ================================
+-- CRIAÇÃO DA GUI PRINCIPAL
+-- ================================
+local Orion = Instance.new("ScreenGui")
+Orion.Name = "ObsidianUI"
+Orion.Parent = gethui and gethui() or CoreGui
+
+if gethui then
+    for _, Interface in ipairs(gethui():GetChildren()) do
+        if Interface.Name == Orion.Name and Interface ~= Orion then
+            Interface:Destroy()
+        end
+    end
+else
+    for _, Interface in ipairs(CoreGui:GetChildren()) do
+        if Interface.Name == Orion.Name and Interface ~= Orion then
+            Interface:Destroy()
+        end
+    end
+end
+
+-- Proteção da GUI
+local ProtectGui = protectgui or (syn and syn.protect_gui) or function() end
+ProtectGui(Orion)
+
+-- ================================
+-- FUNÇÃO PRINCIPAL: MakeWindow
+-- ================================
+function ObsidianLib:MakeWindow(Config)
+    Config = Config or {}
+    Config.Title = Config.Title or "Obsidian UI"
+    Config.ConfigFolder = Config.ConfigFolder or Config.Title
+    Config.SaveConfig = Config.SaveConfig or false
+    Config.Theme = Config.Theme or "Default"
+    Config.KeyToOpen = Config.KeyToOpen or "RightShift"
+    Config.FreeMouse = Config.FreeMouse or false
+    Config.Icon = Config.Icon or "rbxassetid://8834748103"
+    
+    ObsidianLib.Folder = Config.ConfigFolder
+    ObsidianLib.SaveCfg = Config.SaveConfig
+    ObsidianLib.SelectedTheme = Config.Theme
+    
+    if Config.SaveConfig and not isfolder(Config.ConfigFolder) then
+        makefolder(Config.ConfigFolder)
+    end
+    
+    -- Criar holder de notificações
+    local notificationHolderClone = NotificationHolder:Clone()
+    notificationHolderClone.Parent = Orion
+    
+    -- Variáveis de estado
+    local Minimized = false
+    local UIHidden = false
+    
+    -- ================================
+    -- JANELA PRINCIPAL
+    -- ================================
+    local MainWindow = Create("Frame", {
+        Parent = Orion,
+        Position = UDim2.new(0.5, -300, 0.5, -200),
+        Size = UDim2.new(0, 600, 0, 400),
+        BackgroundColor3 = ObsidianConfig.BackgroundColor,
+        ClipsDescendants = true,
+        Active = true,
+        Visible = true,
+    }, {
+        Create("UICorner", {CornerRadius = UDim.new(0, 12)}),
+        Create("UIStroke", {
+            Color = ObsidianConfig.BorderColor,
+            Thickness = 1.5,
+        }),
+        
+        -- ================================
+        -- TOP BAR
+        -- ================================
+        Create("Frame", {
+            Name = "TopBar",
+            Size = UDim2.new(1, 0, 0, 44),
+            BackgroundColor3 = ObsidianConfig.SurfaceColor,
+            BorderSizePixel = 0,
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(0, 12)}),
+            
+            -- Ícone
+            Create("ImageLabel", {
+                Name = "Icon",
+                Image = Config.Icon,
+                Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(0, 12, 0, 12),
+                BackgroundTransparency = 1,
+                ImageColor3 = ObsidianConfig.AccentColor,
+            }),
+            
+            -- Título
+            Create("TextLabel", {
+                Name = "Title",
+                Text = Config.Title,
+                TextColor3 = ObsidianConfig.TextColor,
+                TextSize = 16,
+                Font = ObsidianConfig.FontBold,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -100, 1, 0),
+                Position = UDim2.new(0, 38, 0, 0),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Center,
+                ClipsDescendants = true,
+            }),
+            
+            -- Botão Minimizar
+            Create("TextButton", {
+                Name = "MinimizeBtn",
+                Text = "−",
+                TextColor3 = ObsidianConfig.TextDimColor,
+                TextSize = 20,
+                Font = ObsidianConfig.Font,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(0, 32, 1, 0),
+                Position = UDim2.new(1, -64, 0, 0),
+            }),
+            
+            -- Botão Fechar
+            Create("TextButton", {
+                Name = "CloseBtn",
+                Text = "✕",
+                TextColor3 = ObsidianConfig.DangerColor,
+                TextSize = 16,
+                Font = ObsidianConfig.Font,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(0, 32, 1, 0),
+                Position = UDim2.new(1, -32, 0, 0),
+            }),
+        }),
+        
+        -- ================================
+        -- CONTEÚDO PRINCIPAL
+        -- ================================
+        Create("Frame", {
+            Name = "Content",
+            Size = UDim2.new(1, 0, 1, -44),
+            Position = UDim2.new(0, 0, 0, 44),
+            BackgroundTransparency = 1,
+        }),
+        
+        -- Drag Point
+        Create("Frame", {
+            Name = "DragPoint",
+            Size = UDim2.new(1, 0, 0, 44),
+            BackgroundTransparency = 1,
+        }),
+    })
+    
+    -- Aplicar tema
+    local function ApplyWindowTheme()
+        local theme = ObsidianLib.Themes[ObsidianLib.SelectedTheme]
+        if not theme then return end
+        
+        MainWindow.BackgroundColor3 = theme.Main
+        if MainWindow:FindFirstChild("UIStroke") then
+            MainWindow.UIStroke.Color = theme.Border
+        end
+        
+        local topBar = MainWindow:FindFirstChild("TopBar")
+        if topBar then
+            topBar.BackgroundColor3 = theme.Surface
+            topBar.Title.TextColor3 = theme.Text
+            topBar.Icon.ImageColor3 = theme.Accent
+        end
+    end
+    ApplyWindowTheme()
+    
+    -- Tornar arrastável
+    MakeDraggable(MainWindow.DragPoint, MainWindow)
+    
+    -- ================================
+    -- SISTEMA DE REDIMENSIONAMENTO
+    -- ================================
+    local ResizeHandle = Create("Frame", {
+        Name = "ResizeHandle",
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(1, -18, 1, -18),
+        BackgroundTransparency = 1,
+        ZIndex = 10,
+        Parent = MainWindow,
+    }, {
+        Create("ImageLabel", {
+            Image = "rbxassetid://153287173",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            ImageColor3 = ObsidianConfig.TextDimColor,
+            ImageTransparency = 0.6,
+        })
+    })
+    
+    local MIN_SIZE = Vector2.new(400, 300)
+    local resizing = false
+    local
